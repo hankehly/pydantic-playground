@@ -35,23 +35,3 @@ plan = Plan(
         ]
     },
 )
-
-plan_dct = {
-    "base": [
-        {"tier": 30.0, "price": 858.0},
-        {"tier": 40.0, "price": 1144.0},
-        {"tier": 50.0, "price": 1430.0},
-        {"tier": 60.0, "price": 1716.0},
-    ],
-    "usage": {
-        "flat": [
-            {"tier": 140.0, "price": 23.67},
-            {"tier": 350.0, "price": 23.88},
-            {"tier": Inf, "price": 26.41},
-        ]
-    },
-}
-
-assert plan.dict() == dict(plan) == plan_dct
-
-# print(plan_dct)
