@@ -1,30 +1,47 @@
 from typing import Dict, List
 
-from pydantic import BaseModel, ValidationError, create_model
+from pydantic import BaseModel, confloat, conlist, constr, create_model
 
 Inf = float("inf")
 
+StrictPositiveFloat = confloat(strict=True, gt=0)
+"""
+Can also be written as below, but pycharm type hints show warning
+
+class StrictPositiveFloat(ConstrainedFloat):
+    gt = 0
+    strict = True
+"""
+
+NonNegativeFloat = confloat(ge=0)
+
 
 class Tier(BaseModel):
-    tier: float = Inf
-    price: float = 0.0
+    tier: StrictPositiveFloat = Inf
+    price: NonNegativeFloat = 0.0
 
 
-RateKey = str
+RateKey = constr(strip_whitespace=True, min_length=1, regex="^[a-z_]+$", strict=True)
+"""
+Can also be written:
+
+class RateKey(ConstrainedStr):
+    strip_whitespace = True
+    min_length = 1
+    regex = re.compile("^[a-z_]+$")
+    strict = True
+"""
 
 
 # You can create models out of non-Object types
 class Rate(BaseModel):
-    __root__: List[Tier]
+    __root__: conlist(Tier, min_items=1)
 
 
 class Plan(BaseModel):
-    # using ellipses is just another way of writing `base: Rate`
-    # showing that it is required
-    # this supposedly does not play well with mypy so avoid it
-    base: Rate = ...
+    base: Rate = Rate.parse_obj([Tier()])
 
-    # this field is also required because we only use type annotation
+    # this field required because we only use type annotation
     # and no default value
     usage: Dict[RateKey, Rate]
 
@@ -36,26 +53,25 @@ class Plan(BaseModel):
 
 # https://home.tokyo-gas.co.jp/power/ryokin/menu_waribiki/menu1.html
 plan = Plan(
-    base=Rate(
-        __root__=[
-            Tier(tier=30, price=858),
-            Tier(tier=40, price=1144),
-            Tier(tier=50, price=1430),
-            Tier(tier=60, price=1716),
+    base=Rate.parse_obj(
+        [
+            Tier(tier=30.0, price=858.0),
+            Tier(tier=40.0, price=1144.0),
+            Tier(tier=50.0, price=1430.0),
+            Tier(tier=60.0, price=1716.0),
         ]
     ),
     usage={
         # example of using parse_obj instead of setting __root__ explicitly
         "flat": Rate.parse_obj(
             [
-                Tier(tier=140, price=23.67),
-                Tier(tier=350, price=23.88),
+                Tier(tier=140.0, price=23.67),
+                Tier(tier=350.0, price=23.88),
                 Tier(tier=Inf, price=26.41),
             ]
         )
     },
 )
-
 
 # try:
 #     plan.base = Rate.parse_obj([Tier(tier=Inf, price=0.0)])
@@ -64,7 +80,6 @@ plan = Plan(
 """
 "Plan" is immutable and does not support item assignment
 """
-
 
 ################
 # Dynamic Model
