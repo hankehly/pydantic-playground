@@ -116,7 +116,7 @@ class Test(unittest.TestCase):
 
         self.assertTrue(f(123))
 
-    def test__method(self):
+    def test__instancemethod(self):
         """
         @argtypecheck should handle type checks for instance methods too
         """
@@ -132,6 +132,42 @@ class Test(unittest.TestCase):
 
         with self.assertRaises(ValidationError):
             t.f(x="not a number")
+
+    def test__classmethod(self):
+        """
+        @argtypecheck should handle type checks for class methods
+        """
+
+        class _Test:
+            @classmethod
+            @argtypecheck
+            def f(cls, x: int):
+                return True
+
+        self.assertTrue(_Test.f(x=123))
+
+        with self.assertRaises(ValidationError):
+            _Test.f(x="not a number")
+
+    def test__staticmethod(self):
+        """
+        @argtypecheck should type check static methods
+        """
+
+        class _Test:
+            @staticmethod
+            @argtypecheck
+            def f(x: int):
+                return True
+
+        self.assertTrue(_Test.f(x=123))
+        self.assertTrue(_Test().f(x=123))
+
+        with self.assertRaises(ValidationError):
+            _Test.f(x="not a number")
+
+        with self.assertRaises(ValidationError):
+            _Test().f(x="not a number")
 
 
 if __name__ == "__main__":
