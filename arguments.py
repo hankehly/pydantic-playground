@@ -119,18 +119,19 @@ class Test(unittest.TestCase):
     def test__method(self):
         """
         @argtypecheck should handle type checks for instance methods too
-
-        TODO
         """
 
-        # class _Test:
-        #     @argtypecheck
-        #     def f(self, x: int):
-        #         pass
-        #
-        # with self.assertRaises(ValidationError):
-        #     _Test.f(x="not a number")
-        pass
+        class _Test:
+            @argtypecheck
+            def f(self, x: int):
+                return True
+
+        t = _Test()
+
+        self.assertTrue(t.f(123))
+
+        with self.assertRaises(ValidationError):
+            t.f(x="not a number")
 
 
 if __name__ == "__main__":
