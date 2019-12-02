@@ -170,5 +170,39 @@ class Test(unittest.TestCase):
             _Test().f(x="not a number")
 
 
+def benchmark():
+    import timeit
+
+    def f(x: int):
+        return True
+
+    @argtypecheck
+    def y(x: int):
+        return True
+
+    print(timeit.timeit(lambda: f(x=123), number=1))
+    print(timeit.timeit(lambda: y(x=123), number=1))
+    """
+    Single call
+
+    1.2819999999913456e-06
+    0.0003732779999999769
+    
+    diff: 0.000372 seconds
+    """
+
+    print(timeit.timeit(lambda: f(x=123), number=10000))
+    print(timeit.timeit(lambda: y(x=123), number=10000))
+    """
+    No caching, so repeated calls take longer
+
+    0.001950639000000004
+    1.5600965789999999
+    
+    diff: 1.56 seconds
+    """
+
+
 if __name__ == "__main__":
     unittest.main()
+    # benchmark()
